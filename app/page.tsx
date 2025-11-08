@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { kafkaSimulator } from '@/lib/kafka-simulator';
+import { kafkaSimulator } from '@/lib/simulador-kafka';
 import {
   NetworkNode,
   NetworkStats,
