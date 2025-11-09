@@ -1,0 +1,6 @@
+kafka_*/logs/
+kafka_*/data/
+kafka_*/tmp/
+kafka_*/__consumer_offsets/
+kafka_*/kafka-logs/
+

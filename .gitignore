@@ -1,4 +1,10 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+#kafka
+KafkaBack/kafka_*/logs/
+KafkaBack/kafka_*/data/
+KafkaBack/kafka_*/tmp/
+KafkaBack/kafka_*/__consumer_offsets/
+KafkaBack/kafka_*/kafka-logs/
 
 # dependencies
 bun.lock
