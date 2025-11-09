@@ -63,6 +63,8 @@ export function NodeCard({ node }: NodeCardProps) {
         return <TrendingUp className="h-4 w-4 text-red-600" />;
       case 'stable':
         return <Minus className="h-4 w-4 text-gray-600" />;
+      default:
+        return <Minus className="h-4 w-4 text-gray-600" />;
     }
   };
 
@@ -71,6 +73,17 @@ export function NodeCard({ node }: NodeCardProps) {
     if (node.latency < 150) return 'text-green-600 dark:text-green-400';
     if (node.latency < 300) return 'text-yellow-600 dark:text-yellow-400';
     return 'text-red-600 dark:text-red-400';
+  };
+
+  // Calcular tiempo desde la última actualización
+  const getTimeSinceUpdate = () => {
+    try {
+      const lastUpdateTime = new Date(node.timestamp).getTime();
+      const seconds = Math.floor((Date.now() - lastUpdateTime) / 1000);
+      return seconds;
+    } catch (error) {
+      return 0;
+    }
   };
 
   return (
@@ -156,8 +169,7 @@ export function NodeCard({ node }: NodeCardProps) {
         {/* Última actualización */}
         <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
           <p className="text-xs text-muted-foreground">
-            Actualizado hace{' '}
-            {Math.floor((Date.now() - node.lastUpdate) / 1000)}s
+            Actualizado hace {getTimeSinceUpdate()}s
           </p>
         </div>
       </CardContent>

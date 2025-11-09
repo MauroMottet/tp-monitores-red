@@ -77,14 +77,18 @@ export function EventLog({ events }: EventLogProps) {
     }
   };
 
-  // Formatear el timestamp
-  const formatTime = (timestamp: number) => {
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString('es-AR', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    });
+  // Formatear el timestamp (ahora es string ISO)
+  const formatTime = (timestamp: string) => {
+    try {
+      const date = new Date(timestamp);
+      return date.toLocaleTimeString('es-AR', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      });
+    } catch (error) {
+      return 'N/A';
+    }
   };
 
   // Formatear el tipo de evento

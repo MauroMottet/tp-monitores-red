@@ -17,27 +17,27 @@ interface LatencyChartProps {
   data: LatencyDataPoint[];
 }
 
-// Colores para cada nodo
+// Colores para cada nodo (claves deben coincidir con Node-1, Node-2, etc.)
 const NODE_COLORS = {
-  'node-1': '#10b981', // green
-  'node-2': '#3b82f6', // blue
-  'node-3': '#f59e0b', // amber
-  'node-4': '#8b5cf6', // purple
-  'node-5': '#ec4899', // pink
+  'Node-1': '#10b981', // green
+  'Node-2': '#3b82f6', // blue
+  'Node-3': '#f59e0b', // amber
+  'Node-4': '#8b5cf6', // purple
+  'Node-5': '#ec4899', // pink
 };
 
 // Nombres de nodos para la leyenda
 const NODE_NAMES = {
-  'node-1': 'Node-A',
-  'node-2': 'Node-B',
-  'node-3': 'Node-C',
-  'node-4': 'Node-D',
-  'node-5': 'Node-E',
+  'Node-1': 'Node-A',
+  'Node-2': 'Node-B',
+  'Node-3': 'Node-C',
+  'Node-4': 'Node-D',
+  'Node-5': 'Node-E',
 };
 
 export function LatencyChart({ data }: LatencyChartProps) {
   // Formatear el timestamp para el eje X
-  const formatTime = (timestamp: number) => {
+  const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString('es-AR', {
       hour: '2-digit',
