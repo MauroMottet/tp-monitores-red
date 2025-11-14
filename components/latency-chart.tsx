@@ -17,16 +17,16 @@ interface LatencyChartProps {
   data: LatencyDataPoint[];
 }
 
-// Colores para cada nodo (claves deben coincidir con Node-1, Node-2, etc.)
+// Colores asignados a cada nodo (deben coincidir con las keys en data)
 const NODE_COLORS = {
-  'Node-1': '#10b981', // green
-  'Node-2': '#3b82f6', // blue
-  'Node-3': '#f59e0b', // amber
-  'Node-4': '#8b5cf6', // purple
-  'Node-5': '#ec4899', // pink
+  'Node-1': '#10b981', // verde
+  'Node-2': '#3b82f6', // azul
+  'Node-3': '#f59e0b', // ámbar
+  'Node-4': '#8b5cf6', // púrpura
+  'Node-5': '#ec4899', // rosa
 };
 
-// Nombres de nodos para la leyenda
+// Mapeo para mostrar nombres legibles en la leyenda
 const NODE_NAMES = {
   'Node-1': 'Node-A',
   'Node-2': 'Node-B',
@@ -36,7 +36,7 @@ const NODE_NAMES = {
 };
 
 export function LatencyChart({ data }: LatencyChartProps) {
-  // Formatear el timestamp para el eje X
+  // Convierte timestamp ISO a formato HH:MM:SS para el eje X
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString('es-AR', {
@@ -46,16 +46,19 @@ export function LatencyChart({ data }: LatencyChartProps) {
     });
   };
 
-  // Formatear el tooltip
+  // Tooltip personalizado con estilo dark mode y valores formateados
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white dark:bg-gray-800 p-3 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
+          {/* Timestamp del punto */}
           <p className="text-xs text-muted-foreground mb-2">
             {formatTime(label)}
           </p>
+          {/* Lista de nodos con sus valores */}
           {payload.map((entry: any) => (
             <div key={entry.dataKey} className="flex items-center gap-2 mb-1">
+              {/* Círculo de color del nodo */}
               <div
                 className="w-3 h-3 rounded-full"
                 style={{ backgroundColor: entry.color }}
@@ -79,18 +82,24 @@ export function LatencyChart({ data }: LatencyChartProps) {
         </p>
       </CardHeader>
       <CardContent>
+        {/* Container responsive para que el gráfico se adapte al ancho */}
         <ResponsiveContainer width="100%" height={400}>
           <LineChart
             data={data}
             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
           >
+            {/* Grilla con líneas punteadas */}
             <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+            
+            {/* Eje X: timestamps formateados */}
             <XAxis
               dataKey="timestamp"
               tickFormatter={formatTime}
               tick={{ fontSize: 12 }}
               className="text-muted-foreground"
             />
+            
+            {/* Eje Y: latencia en ms, rango 0-500ms */}
             <YAxis
               label={{
                 value: 'Latencia (ms)',
@@ -102,31 +111,35 @@ export function LatencyChart({ data }: LatencyChartProps) {
               className="text-muted-foreground"
               domain={[0, 500]}
             />
+            
+            {/* Tooltip customizado al hacer hover */}
             <Tooltip content={<CustomTooltip />} />
+            
+            {/* Leyenda con nombres mapeados (Node-A, Node-B, etc.) */}
             <Legend
               wrapperStyle={{ fontSize: 14 }}
               iconType="line"
               formatter={(value) => NODE_NAMES[value as keyof typeof NODE_NAMES]}
             />
 
-            {/* Línea para cada nodo */}
+            {/* Genera una línea por cada nodo con su color asignado */}
             {Object.entries(NODE_COLORS).map(([nodeId, color]) => (
               <Line
                 key={nodeId}
-                type="monotone"
-                dataKey={nodeId}
+                type="monotone"           // Curva suave
+                dataKey={nodeId}          // Key en el objeto data
                 stroke={color}
                 strokeWidth={2}
-                dot={{ r: 3 }}
-                activeDot={{ r: 5 }}
+                dot={{ r: 3 }}            // Radio de los puntos
+                activeDot={{ r: 5 }}      // Radio al hacer hover
                 name={nodeId}
-                connectNulls
+                connectNulls              // Conecta línea aunque haya valores null
               />
             ))}
           </LineChart>
         </ResponsiveContainer>
 
-        {/* Leyenda de rangos de latencia */}
+        {/* Leyenda visual de umbrales de latencia */}
         <div className="mt-4 flex items-center justify-center gap-6 text-xs">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-green-500" />

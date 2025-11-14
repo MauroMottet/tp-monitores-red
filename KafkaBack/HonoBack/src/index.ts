@@ -11,7 +11,7 @@ import type { NetworkNode, NetworkEvent } from './types';
 
 const app = new Hono();
 
-// Habilitar CORS
+// Configuración de CORS para permitir peticiones desde el frontend
 app.use('*', cors({
   origin: ['http://localhost:3001', 'http://localhost:3000', '*'],
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -19,7 +19,7 @@ app.use('*', cors({
   credentials: true,
 }));
 
-// Estado global de los nodos
+// Inicialización de 5 nodos de red con datos mock
 let nodes: Map<number, NetworkNode> = new Map(
   Array.from({ length: 5 }, (_, i) => [
     i + 1,
@@ -34,25 +34,26 @@ let nodes: Map<number, NetworkNode> = new Map(
   ])
 );
 
-// Listeners para SSE
+// Set para almacenar funciones callback de clientes SSE conectados
 const sseListeners: Set<(data: NetworkEvent) => void> = new Set();
 
-// Función para notificar a todos los clientes SSE
+// Distribuye eventos a todos los clientes SSE conectados
 function notifySSEClients(event: NetworkEvent) {
   sseListeners.forEach(listener => listener(event));
 }
 
 // ========== ENDPOINTS ==========
 
+// Health check endpoint
 app.get('/', (c) => c.text('✅ Kafka simulator running...'));
 
-// Endpoint para obtener todos los nodos
+// Devuelve el array completo de nodos
 app.get('/nodes', (c) => {
   const nodeArray = Array.from(nodes.values());
   return c.json(nodeArray);
 });
 
-// Endpoint para obtener un nodo específico
+// Devuelve un nodo específico por ID
 app.get('/nodes/:id', (c) => {
   const id = parseInt(c.req.param('id'));
   const node = nodes.get(id);
@@ -64,7 +65,7 @@ app.get('/nodes/:id', (c) => {
   return c.json(node);
 });
 
-// Server-Sent Events para actualizaciones en tiempo real
+// Stream de eventos en tiempo real usando Server-Sent Events
 app.get('/events', (c) => {
   const encoder = new TextEncoder();
   let controller: ReadableStreamDefaultController<Uint8Array> | null = null;
@@ -75,6 +76,7 @@ app.get('/events', (c) => {
       controller = ctrl;
       console.log(`🔌 Cliente SSE conectado. Total listeners: ${sseListeners.size + 1}`);
       
+      // Función listener que envía eventos al cliente
       const listener = (event: NetworkEvent) => {
         if (isClosed || !controller) return;
 
@@ -89,7 +91,7 @@ app.get('/events', (c) => {
 
       sseListeners.add(listener);
 
-      // Marcar como cerrado cuando se desconecta
+      // Cleanup cuando el cliente se desconecta
       (c.req.raw as any).on?.('close', () => {
         isClosed = true;
         sseListeners.delete(listener);
@@ -114,7 +116,7 @@ app.get('/events', (c) => {
 
 // ========== INICIALIZACIÓN KAFKA ==========
 
-// Función para encontrar Kafka (relativo al proyecto)
+// Busca la instalación de Kafka en el directorio del proyecto
 function findKafkaPath(): string {
   const kafkaPath = join(import.meta.dir, '../../kafka_2.13-4.1.0');
 
@@ -126,7 +128,7 @@ function findKafkaPath(): string {
   throw new Error(`❌ No se encontró Kafka en ${kafkaPath}`);
 }
 
-// Función para iniciar Kafka Server
+// Inicia el servidor de Kafka como proceso hijo
 async function startKafkaServer(kafkaPath: string) {
   return new Promise<void>((resolve, reject) => {
     try {
@@ -135,6 +137,7 @@ async function startKafkaServer(kafkaPath: string) {
       const kafkaServerPath = join(kafkaPath, 'bin/kafka-server-start.sh');
       const kafkaConfig = join(kafkaPath, 'config/server.properties');
 
+      // Spawn del proceso Kafka
       const kafkaServer = spawn('sh', [kafkaServerPath, kafkaConfig], {
         stdio: ['ignore', 'pipe', 'pipe'],
         detached: false,
@@ -143,6 +146,7 @@ async function startKafkaServer(kafkaPath: string) {
       let isResolved = false;
       let output = '';
 
+      // Monitorea la salida estándar para detectar cuando Kafka está listo
       kafkaServer.stdout?.on('data', (data) => {
         const chunk = data.toString();
         output += chunk;
@@ -171,7 +175,7 @@ async function startKafkaServer(kafkaPath: string) {
         console.log(`Proceso Kafka cerrado con código: ${code}`);
       });
 
-      // Timeout de 20 segundos
+      // Timeout de seguridad para no esperar indefinidamente
       setTimeout(() => {
         if (!isResolved) {
           isResolved = true;
@@ -185,7 +189,7 @@ async function startKafkaServer(kafkaPath: string) {
   });
 }
 
-// Función para inicializar Kafka Client
+// Conecta el producer de Kafka para enviar mensajes
 async function initializeKafkaClient() {
   try {
     console.log('🔄 Conectando producer de Kafka...');
@@ -197,28 +201,28 @@ async function initializeKafkaClient() {
   }
 }
 
-// Bootstrap
+// Función principal que inicializa todo el sistema
 async function bootstrap() {
   try {
     const kafkaPath = findKafkaPath();
     
+    // Inicia Kafka y espera a que esté listo
     await startKafkaServer(kafkaPath);
     console.log('⏳ Esperando a que Kafka esté listo...');
     await new Promise(resolve => setTimeout(resolve, 8000));
     
     await initializeKafkaClient();
     
-    // Registrar la referencia de nodos en el simulador
+    // Configura el simulador con la referencia de nodos y el notificador SSE
     setNodesRef(nodes);
-    
-    // Registrar el notificador de SSE
     setSSENotifier((event: NetworkEvent) => {
       notifySSEClients(event);
     });
     
-    // Iniciar el simulador automáticamente
+    // Inicia el simulador de eventos de red
     startSimulator();
     
+    // Inicia el servidor HTTP
     Bun.serve({
       port: 3000,
       fetch: app.fetch,
@@ -227,18 +231,15 @@ async function bootstrap() {
 
     console.log('🚀 Servidor Hono escuchando en http://localhost:3000');
   } catch (error) {
+    // Fallback: si Kafka falla, inicia en modo simulación
     console.error('❌ Error en bootstrap:', error);
     console.log('⚠️ Iniciando servidor sin Kafka...');
     
-    // Registrar la referencia de nodos en el simulador
     setNodesRef(nodes);
-    
-    // Registrar el notificador de SSE
     setSSENotifier((event: NetworkEvent) => {
       notifySSEClients(event);
     });
     
-    // Iniciar el simulador automáticamente
     startSimulator();
     
     Bun.serve({

@@ -10,8 +10,10 @@ interface StatsOverviewProps {
 
 export function StatsOverview({ stats }: StatsOverviewProps) {
   return (
+    // Grid responsive: 1 col móvil, 2 tablet, 4 desktop
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      {/* Nodos Activos */}
+      
+      {/* Card 1: Nodos Activos */}
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
@@ -19,14 +21,17 @@ export function StatsOverview({ stats }: StatsOverviewProps) {
               <p className="text-sm font-medium text-muted-foreground">
                 Nodos Activos
               </p>
+              {/* Formato: activos / totales */}
               <p className="text-2xl font-bold mt-2">
                 {stats.activeNodes} / {stats.totalNodes}
               </p>
             </div>
+            {/* Ícono circular con fondo verde */}
             <div className="h-12 w-12 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
               <Wifi className="h-6 w-6 text-green-600 dark:text-green-400" />
             </div>
           </div>
+          {/* Barra de progreso animada */}
           <div className="mt-4">
             <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
               <div
@@ -40,7 +45,7 @@ export function StatsOverview({ stats }: StatsOverviewProps) {
         </CardContent>
       </Card>
 
-      {/* Latencia Promedio */}
+      {/* Card 2: Latencia Promedio */}
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
@@ -55,6 +60,7 @@ export function StatsOverview({ stats }: StatsOverviewProps) {
                 </span>
               </p>
             </div>
+            {/* Color dinámico según latencia: verde < 150 < amarillo < 300 < rojo */}
             <div
               className={`h-12 w-12 rounded-full flex items-center justify-center ${
                 stats.averageLatency < 150
@@ -75,6 +81,7 @@ export function StatsOverview({ stats }: StatsOverviewProps) {
               />
             </div>
           </div>
+          {/* Etiqueta de estado */}
           <div className="mt-4">
             <p className="text-xs text-muted-foreground">
               {stats.averageLatency < 150
@@ -87,7 +94,7 @@ export function StatsOverview({ stats }: StatsOverviewProps) {
         </CardContent>
       </Card>
 
-      {/* Total de Conexiones */}
+      {/* Card 3: Conexiones Totales */}
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
@@ -95,6 +102,7 @@ export function StatsOverview({ stats }: StatsOverviewProps) {
               <p className="text-sm font-medium text-muted-foreground">
                 Conexiones Totales
               </p>
+              {/* Formato con separador de miles */}
               <p className="text-2xl font-bold mt-2">
                 {stats.totalConnections.toLocaleString()}
               </p>
@@ -103,6 +111,7 @@ export function StatsOverview({ stats }: StatsOverviewProps) {
               <Activity className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             </div>
           </div>
+          {/* Cálculo de promedio por nodo */}
           <div className="mt-4">
             <p className="text-xs text-muted-foreground">
               {(stats.totalConnections / stats.totalNodes).toFixed(0)} por nodo
@@ -112,7 +121,7 @@ export function StatsOverview({ stats }: StatsOverviewProps) {
         </CardContent>
       </Card>
 
-      {/* Alarmas Activas */}
+      {/* Card 4: Alarmas Activas */}
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
@@ -122,6 +131,7 @@ export function StatsOverview({ stats }: StatsOverviewProps) {
               </p>
               <p className="text-2xl font-bold mt-2">{stats.activeAlarms}</p>
             </div>
+            {/* Gris sin alarmas, rojo con alarmas */}
             <div
               className={`h-12 w-12 rounded-full flex items-center justify-center ${
                 stats.activeAlarms === 0
@@ -138,6 +148,7 @@ export function StatsOverview({ stats }: StatsOverviewProps) {
               />
             </div>
           </div>
+          {/* Mensaje de estado del sistema */}
           <div className="mt-4">
             <p className="text-xs text-muted-foreground">
               {stats.activeAlarms === 0

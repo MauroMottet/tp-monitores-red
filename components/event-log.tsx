@@ -18,7 +18,7 @@ interface EventLogProps {
 }
 
 export function EventLog({ events }: EventLogProps) {
-  // Obtener el icono según el tipo de evento
+  // Retorna ícono según tipo de evento (cambio de estado, latencia, conexión, alarma)
   const getEventIcon = (type: string) => {
     switch (type) {
       case 'NODE_STATUS_CHANGE':
@@ -34,7 +34,7 @@ export function EventLog({ events }: EventLogProps) {
     }
   };
 
-  // Obtener el color según la severidad
+  // Clases Tailwind para color de fondo, texto y borde según severidad
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'critical':
@@ -48,7 +48,7 @@ export function EventLog({ events }: EventLogProps) {
     }
   };
 
-  // Obtener el badge de severidad
+  // Badge visual con ícono y texto según severidad
   const getSeverityBadge = (severity: string) => {
     switch (severity) {
       case 'critical':
@@ -77,7 +77,7 @@ export function EventLog({ events }: EventLogProps) {
     }
   };
 
-  // Formatear el timestamp (ahora es string ISO)
+  // Convierte timestamp ISO a formato HH:MM:SS
   const formatTime = (timestamp: string) => {
     try {
       const date = new Date(timestamp);
@@ -91,7 +91,7 @@ export function EventLog({ events }: EventLogProps) {
     }
   };
 
-  // Formatear el tipo de evento
+  // Traduce tipos de evento a texto legible en español
   const formatEventType = (type: string) => {
     switch (type) {
       case 'NODE_STATUS_CHANGE':
@@ -117,6 +117,7 @@ export function EventLog({ events }: EventLogProps) {
               Últimos {events.length} eventos del sistema
             </p>
           </div>
+          {/* Contador de eventos en badge */}
           {events.length > 0 && (
             <Badge variant="outline" className="text-xs">
               {events.length} eventos
@@ -125,7 +126,9 @@ export function EventLog({ events }: EventLogProps) {
         </div>
       </CardHeader>
       <CardContent>
+        {/* ScrollArea para manejar overflow con altura fija de 500px */}
         <ScrollArea className="h-[500px] pr-4">
+          {/* Estado vacío: sin eventos */}
           {events.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center py-12">
               <Activity className="h-12 w-12 text-muted-foreground/50 mb-3" />
@@ -137,21 +140,24 @@ export function EventLog({ events }: EventLogProps) {
               </p>
             </div>
           ) : (
+            // Lista de eventos
             <div className="space-y-3">
               {events.map((event) => (
                 <div
                   key={event.id}
+                  // Borde lateral grueso (4px) con color según severidad
                   className={`p-4 rounded-lg border-l-4 transition-all hover:shadow-md ${getSeverityColor(
                     event.severity
                   )}`}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-3 flex-1">
-                      {/* Icono del evento */}
+                      {/* Ícono del tipo de evento */}
                       <div className="mt-0.5">{getEventIcon(event.type)}</div>
 
-                      {/* Contenido del evento */}
+                      {/* Contenido principal del evento */}
                       <div className="flex-1 min-w-0">
+                        {/* Línea 1: Timestamp + nombre del nodo */}
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-xs font-mono text-muted-foreground">
                             {formatTime(event.timestamp)}
@@ -161,14 +167,16 @@ export function EventLog({ events }: EventLogProps) {
                             {event.nodeName}
                           </span>
                         </div>
+                        {/* Línea 2: Tipo de evento formateado */}
                         <p className="text-sm font-medium mb-1">
                           {formatEventType(event.type)}
                         </p>
+                        {/* Línea 3: Descripción detallada */}
                         <p className="text-sm">{event.description}</p>
                       </div>
                     </div>
 
-                    {/* Badge de severidad */}
+                    {/* Badge de severidad a la derecha */}
                     <div className="flex-shrink-0">
                       {getSeverityBadge(event.severity)}
                     </div>
